@@ -1,6 +1,6 @@
 ---
-title: "Homework 2"
-author: "PSTAT 131/231"
+title: "Homework 2 PSTAT 131/231"
+author: "Jonathan Palada Rosal"
 output:
     html_document:
       toc: true
@@ -11,6 +11,9 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE,
                       warning = FALSE)
+library(tidyverse)
+library(tidymodels)
+library(dplyr)
 ```
 
 ## Linear Regression
@@ -30,6 +33,14 @@ Make sure you load the `tidyverse` and `tidymodels`!
 Your goal is to predict abalone age, which is calculated as the number of rings plus 1.5. Notice there currently is no `age` variable in the data set. Add `age` to the data set.
 
 Assess and describe the distribution of `age`.
+
+```{r}
+abalone_codebook <- read.csv("C:\\Users\\Jonat\\OneDrive\\schoolwork\\PSTAT 131\\HW\\HW 2\\homework-2\\data\\abalone.csv")
+abalone_codebook2 <- abalone_codebook %>%
+  mutate(age = rings+1.5)
+ggplot(abalone_codebook2,aes(age)) + geom_bar()
+```
+The distribution of age is approximately a normal distribution. The distributions seems to be shifted to the left just a bit.
 
 ### Question 2
 
