@@ -1647,7 +1647,7 @@ splitting the data.</p>
 document to reproduce your results.</em></p>
 <pre class="r"><code>set.seed(3435)
 
-abalone_codebook2_split &lt;- initial_split(abalone_codebook2, prop = 0.75, strata = age)
+abalone_codebook2_split &lt;- initial_split(abalone_codebook2, prop = 0.80, strata = age)
 abalone_codebook2_train &lt;- training(abalone_codebook2_split)
 abalone_codebook2_test &lt;- testing(abalone_codebook2_split)</code></pre>
 </div>
@@ -1672,11 +1672,11 @@ predict <code>age</code>. Explain why you shouldn’t use
 </ol>
 <p>You’ll need to investigate the <code>tidymodels</code> documentation
 to find the appropriate step functions to use.</p>
-<pre class="r"><code>abalone_recipe &lt;- recipe(age ~ ., data=abalone_codebook2_train) %&gt;%
+<pre class="r"><code>abalone_recipe &lt;- recipe(age ~ ., data=abalone_codebook2_train %&gt;% select(- rings)) %&gt;%
   step_dummy(all_nominal_predictors())%&gt;% 
-  step_interact(terms = ~ abalone_codebook2$type:abalone_codebook2$shucked_weight) %&gt;%
-  step_interact(terms = ~ abalone_codebook2$longest_shell:abalone_codebook2$diameter) %&gt;%
-  step_interact(terms = ~ abalone_codebook2$shucked_weight:abalone_codebook2$shell_weight) %&gt;% step_normalize() %&gt;% step_center()
+  step_interact(terms = ~ starts_with(&quot;type&quot;):shucked_weight) %&gt;%
+  step_interact(terms = ~ longest_shell:diameter) %&gt;%
+  step_interact(terms = ~ shucked_weight:shell_weight) %&gt;% step_normalize() %&gt;% step_center(all_predictors()) %&gt;% step_scale()
 abalone_recipe</code></pre>
 <pre><code>## Recipe
 ## 
@@ -1684,16 +1684,17 @@ abalone_recipe</code></pre>
 ## 
 ##       role #variables
 ##    outcome          1
-##  predictor          9
+##  predictor          8
 ## 
 ## Operations:
 ## 
 ## Dummy variables from all_nominal_predictors()
-## Interactions with abalone_codebook2$type:abalone_codebook2$shucked_w...
-## Interactions with abalone_codebook2$longest_shell:abalone_codebook2$...
-## Interactions with abalone_codebook2$shucked_weight:abalone_codebook2...
+## Interactions with starts_with(&quot;type&quot;):shucked_weight
+## Interactions with longest_shell:diameter
+## Interactions with shucked_weight:shell_weight
 ## Centering and scaling for &lt;none&gt;
-## Centering for &lt;none&gt;</code></pre>
+## Centering for all_predictors()
+## Scaling for &lt;none&gt;</code></pre>
 </div>
 <div id="question-4" class="section level3">
 <h3>Question 4</h3>
@@ -1720,9 +1721,51 @@ abalone_recipe</code></pre>
 hypothetical female abalone with longest_shell = 0.50, diameter = 0.10,
 height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2,
 shell_weight = 1.</p>
-<pre class="r"><code>#lm_fit &lt;- fit(lm_wflow, abalone_codebook2_train)
-
-#Error that comes up for me.
+<pre class="r"><code>lm_fit &lt;- fit(lm_wflow, abalone_codebook2_train)
+lm_fit</code></pre>
+<pre><code>## == Workflow [trained] ==========================================================
+## Preprocessor: Recipe
+## Model: linear_reg()
+## 
+## -- Preprocessor ----------------------------------------------------------------
+## 7 Recipe Steps
+## 
+## * step_dummy()
+## * step_interact()
+## * step_interact()
+## * step_interact()
+## * step_normalize()
+## * step_center()
+## * step_scale()
+## 
+## -- Model -----------------------------------------------------------------------
+## 
+## Call:
+## stats::lm(formula = ..y ~ ., data = data)
+## 
+## Coefficients:
+##                   (Intercept)                  longest_shell  
+##                      11.42335                        4.92120  
+##                      diameter                         height  
+##                      20.82298                        5.53388  
+##                  whole_weight                 shucked_weight  
+##                       8.73785                      -18.24370  
+##                viscera_weight                   shell_weight  
+##                      -7.21225                       12.54605  
+##                        type_I                         type_M  
+##                      -2.00804                       -0.49584  
+##       type_I_x_shucked_weight        type_M_x_shucked_weight  
+##                       4.47388                        1.18334  
+##      longest_shell_x_diameter  shucked_weight_x_shell_weight  
+##                     -29.23234                       -0.02776</code></pre>
+<pre class="r"><code>random_data &lt;- data.frame(type=&quot;F&quot;,longest_shell = 0.50, diameter = 0.10, height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2, shell_weight = 1,stringsAsFactors = TRUE)
+prediction &lt;- predict(lm_fit, new_data = random_data)
+prediction</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   .pred
+##   &lt;dbl&gt;
+## 1  23.7</code></pre>
+<pre class="r"><code>#Error that comes up for me.
 #Error in model.frame.default(object, data, xlev = xlev) : 
 #invalid type (NULL) for variable &#39;abalone_codebook2$typeF&#39;</code></pre>
 </div>
