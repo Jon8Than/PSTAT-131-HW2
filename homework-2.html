@@ -1645,6 +1645,11 @@ stratified sampling. You should decide on appropriate percentages for
 splitting the data.</p>
 <p><em>Remember that you’ll need to set a seed at the beginning of the
 document to reproduce your results.</em></p>
+<pre class="r"><code>set.seed(3435)
+
+abalone_codebook2_split &lt;- initial_split(abalone_codebook2, prop = 0.75, strata = age)
+abalone_codebook2_train &lt;- training(abalone_codebook2_split)
+abalone_codebook2_test &lt;- testing(abalone_codebook2_split)</code></pre>
 </div>
 <div id="question-3" class="section level3">
 <h3>Question 3</h3>
@@ -1667,11 +1672,35 @@ predict <code>age</code>. Explain why you shouldn’t use
 </ol>
 <p>You’ll need to investigate the <code>tidymodels</code> documentation
 to find the appropriate step functions to use.</p>
+<pre class="r"><code>abalone_recipe &lt;- recipe(age ~ ., data=abalone_codebook2_train) %&gt;%
+  step_dummy(all_nominal_predictors())%&gt;% 
+  step_interact(terms = ~ abalone_codebook2$type:abalone_codebook2$shucked_weight) %&gt;%
+  step_interact(terms = ~ abalone_codebook2$longest_shell:abalone_codebook2$diameter) %&gt;%
+  step_interact(terms = ~ abalone_codebook2$shucked_weight:abalone_codebook2$shell_weight) %&gt;% step_normalize() %&gt;% step_center()
+abalone_recipe</code></pre>
+<pre><code>## Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##    outcome          1
+##  predictor          9
+## 
+## Operations:
+## 
+## Dummy variables from all_nominal_predictors()
+## Interactions with abalone_codebook2$type:abalone_codebook2$shucked_w...
+## Interactions with abalone_codebook2$longest_shell:abalone_codebook2$...
+## Interactions with abalone_codebook2$shucked_weight:abalone_codebook2...
+## Centering and scaling for &lt;none&gt;
+## Centering for &lt;none&gt;</code></pre>
 </div>
 <div id="question-4" class="section level3">
 <h3>Question 4</h3>
 <p>Create and store a linear regression object using the
 <code>&quot;lm&quot;</code> engine.</p>
+<pre class="r"><code>lm_model &lt;- linear_reg() %&gt;% 
+  set_engine(&quot;lm&quot;)</code></pre>
 </div>
 <div id="question-5" class="section level3">
 <h3>Question 5</h3>
@@ -1681,6 +1710,9 @@ to find the appropriate step functions to use.</p>
 <li>add the model you created in Question 4, and</li>
 <li>add the recipe that you created in Question 3.</li>
 </ol>
+<pre class="r"><code>lm_wflow &lt;- workflow() %&gt;% 
+  add_model(lm_model) %&gt;% 
+  add_recipe(abalone_recipe)</code></pre>
 </div>
 <div id="question-6" class="section level3">
 <h3>Question 6</h3>
@@ -1688,6 +1720,11 @@ to find the appropriate step functions to use.</p>
 hypothetical female abalone with longest_shell = 0.50, diameter = 0.10,
 height = 0.30, whole_weight = 4, shucked_weight = 1, viscera_weight = 2,
 shell_weight = 1.</p>
+<pre class="r"><code>#lm_fit &lt;- fit(lm_wflow, abalone_codebook2_train)
+
+#Error that comes up for me.
+#Error in model.frame.default(object, data, xlev = xlev) : 
+#invalid type (NULL) for variable &#39;abalone_codebook2$typeF&#39;</code></pre>
 </div>
 <div id="question-7" class="section level3">
 <h3>Question 7</h3>
