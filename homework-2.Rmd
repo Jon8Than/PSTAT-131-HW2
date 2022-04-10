@@ -86,6 +86,7 @@ abalone_recipe <- recipe(age ~ ., data=abalone_codebook2_train %>% select(- ring
   step_interact(terms = ~ shucked_weight:shell_weight) %>% step_normalize() %>% step_center(all_predictors()) %>% step_scale()
 abalone_recipe
 ```
+Rings cannot be used to predict age because since age is based off of rings then the prediction will be 100% accurate.
 
 ### Question 4
 
